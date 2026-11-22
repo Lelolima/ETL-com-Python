@@ -1,64 +1,64 @@
-Projeto ETL Python
-📋 Descrição
-Este projeto implementa um processo de ETL (Extract, Transform, Load) utilizando Python. O sistema extrai dados de APIs REST, realiza transformações necessárias e carrega os dados em um banco de dados destino.
-🚀 Funcionalidades
-Extração de dados via API REST utilizando a biblioteca requests
-Transformação de dados usando pandas
-Carregamento em banco de dados relacional
-Logs de execução
-Tratamento de erros
+# ETL com Python — Dashboard Ibovespa
 
-📦 Pré-requisitos
-python >= 3.8
-pip install -r requirements.txt
+Dashboard Dash que busca a cotação do Ibovespa, transforma em DataFrame e exibe estatísticas e gráficos com
+atualização periódica. O repositório também traz módulos ETL genéricos (cliente REST com API key, transformador
+pandas e carregador SQLAlchemy) que **não estão ligados ao dashboard**.
 
-🛠️ Dependências principais
-requests==2.31.0
-pandas==2.1.0
-python-dotenv==1.0.0
-sqlalchemy==2.0.0
+> ⚠️ **Fonte de dados indisponível (verificado em 2026-11-22):** o endpoint
+> `https://www.infomoney.com.br/wp-json/infomoney/v1/cotacoes/ibovespa` (e o de bitcoin) responde **HTTP 404**.
+> O dashboard abre, mas mostra "Error loading data". Trocar a fonte é decisão do dono do projeto.
 
-🔧 Configuração
-1. Clone o repositório
-git clone https://github.com/seu-usuario/etl-python.git
-cd etl-python
+Até 2026-11-22 o código estava só dentro de um `.zip` gerado pelo Bolt; ele foi extraído para a árvore do
+repositório (o zip continua disponível no histórico do git).
 
-2. Configure o ambiente virtual
-python -m venv venv
-source venv/bin/activate  # Linux/Mac
-venv\Scripts\activate     # Windows
+## Estrutura
 
-3.Instale as dependências
- pip install -r requirements.txt
+```
+src/
+├── main.py                     # ponto de entrada (python -m src.main)
+├── config/settings.py          # URLs, timeout, intervalo de atualização, cores
+├── dashboard/                  # app Dash + componentes (gráficos e estatísticas)
+├── extract/                    # ibovespa_client, infomoney_client (bitcoin), api_client (genérico, exige API_KEY)
+├── transform/                  # transformadores Ibovespa, Bitcoin e genérico
+├── load/database.py            # carga via SQLAlchemy (exige DB_CONNECTION)
+└── utils/                      # logger, cache em memória, estatísticas
+tests/                          # pytest/unittest
+```
 
- 4. Configure as variáveis de ambiente criando um arquivo .env:
- API_KEY=sua_chave_api
-DB_CONNECTION=postgresql://user:password@localhost:5432/database
+## Instalação
 
-📖 Como usar
-python src/main.py
+Python 3.10+ (testado com 3.12).
 
-🗂️ Estrutura do projeto
-etl-python/
-├── src/
-│   ├── extract/
-│   ├── transform/
-│   ├── load/
-│   └── main.py
-├── tests/
-├── .env.example
-├── requirements.txt
-└── README.md
+```bash
+python -m venv .venv
+source .venv/bin/activate      # Windows: .venv\Scripts\activate
+pip install -r requirements.txt          # execução
+pip install -r requirements-dev.txt      # + testes e lint
+```
 
-🤝 Contribuindo
-1. Faça um fork do projeto
-Crie uma branch para sua feature (git checkout -b feature/nova-feature)
-Commit suas mudanças (git commit -m 'Adiciona nova feature')
-Push para a branch (git push origin feature/nova-feature)
-Abra um Pull Request
-📝 Licença
-Este projeto está sob a licença MIT. Veja o arquivo LICENSE para mais detalhes.
-✒️ Autor
-Seu Nome - @Lelolima
----
-⌨️ com ❤️ por Wellingtom de lima catarina
+## Execução
+
+```bash
+python -m src.main
+```
+
+Abre o servidor em http://127.0.0.1:8050 (atualização a cada 60 s).
+
+## Variáveis de ambiente
+
+Veja `.env.example` (sem valores reais). `API_KEY` e `DB_CONNECTION` só são exigidas por `APIClient` e
+`DatabaseLoader`; o dashboard não as usa. `DASH_DEBUG=1` liga o modo debug do Dash.
+
+## Testes e lint
+
+```bash
+ruff check .
+pytest -q tests
+```
+
+Os testes não acessam a rede (o cliente HTTP é substituído por `patch` onde necessário). CI em
+`.github/workflows/ci.yml`.
+
+## Licença
+
+Não há arquivo `LICENSE` no repositório (o README antigo citava MIT).
